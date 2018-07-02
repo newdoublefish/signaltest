@@ -1,0 +1,63 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion buildToolsVer
+    defaultConfig {
+        applicationId "cn.gdmcmc.www.demo"
+        minSdkVersion minSdkVer
+        targetSdkVersion targetSdkVer
+        versionName appVersionName
+        versionCode appVersionCode
+        archivesBaseName = "Demo"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+//apply plugin: 'com.neenbedankt.android-apt'
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    //begin 一定要匹配
+    implementation "com.android.support:appcompat-v7:$supportLibVer"
+    implementation "com.android.support:design:$supportLibVer"
+    //end
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    //implementation 'com.jakewharton:butterknife:8.1.0'
+    //apt 'com.jakewharton:butterknife-compiler:8.1.0'
+    implementation 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation "com.android.support:recyclerview-v7:$supportLibVer"
+    implementation "com.android.support:cardview-v7:$supportLibVer"
+
+    implementation 'com.jude:easyrecyclerview:4.0.2'
+
+    implementation 'com.squareup.okhttp3:okhttp:3.3.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.0.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.0.2'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.0.2'
+
+    implementation 'io.reactivex:rxandroid:1.2.1'
+    implementation 'io.reactivex:rxjava:1.1.6'
+
+    implementation 'jp.wasabeef:glide-transformations:2.0.1'
+    testImplementation 'junit:junit:4.12'
+    implementation project(path: ':mylibrary')
+}
