@@ -7,4 +7,6 @@
     <color name="white">#ffffff</color>
     <color name="gray">#eeeeee</color>
     <color name="black">#000000</color>
+    <color name="menu_bar">#244855</color>
+    <color name="menu_bar_pressed">#8DA2AD</color>
 </resources>

@@ -16,6 +16,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import cn.gdmcmc.www.demo.R;
+import cn.gdmcmc.www.demo.service.PingService;
 import cn.gdmcmc.www.demo.util.LogUtil;
 import coder.mylibrary.base.AppActivity;
 import coder.mylibrary.base.BaseFragment;
@@ -36,6 +37,9 @@ public class HomeActivity extends AppActivity {
     CoordinatorLayout homeLayout;
     private Unbinder unbinder;
     private long exitTime = 0;
+    BaseFragment firstFragment;
+    BaseFragment secondFragment;
+    PingService mPingservice;
 
     @Override
     protected int getContentViewId() {
@@ -48,6 +52,14 @@ public class HomeActivity extends AppActivity {
         unbinder = ButterKnife.bind(this);
         toolbar.setTitle(R.string.app_name);
         setSupportActionBar(toolbar);
+        secondFragment = new RecordFragment();
+
+        btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+        btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+
+        Intent intent = new Intent(HomeActivity.this,
+                PingService.class);
+        startService(intent);
     }
 
     @Override
@@ -58,7 +70,8 @@ public class HomeActivity extends AppActivity {
     @Override
     protected BaseFragment getFirstFragment() {
         LogUtil.e("-------------getFirstFragment--------------!!!!");
-        return new DeviceFragment();
+        firstFragment = new PingFragment();
+        return firstFragment;
     }
 
     @Override
@@ -76,8 +89,14 @@ public class HomeActivity extends AppActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn1:
+                this.addFragment(firstFragment);
+                btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+                btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
                 break;
             case R.id.btn2:
+                this.addFragment(secondFragment);
+                btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+                btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar));
                 break;
         }
     }
