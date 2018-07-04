@@ -12,10 +12,17 @@ import com.stealthcopter.networktools.Ping;
 import com.stealthcopter.networktools.ping.PingResult;
 import com.stealthcopter.networktools.ping.PingStats;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import cn.gdmcmc.www.demo.application.MyApplication;
+import cn.gdmcmc.www.demo.dao.Record;
+import cn.gdmcmc.www.demo.dao.RecordItem;
+import cn.gdmcmc.www.demo.util.LogUtil;
 
 public class PingService extends Service {
     private static final String TAG = PingService.class.getSimpleName();
@@ -25,6 +32,7 @@ public class PingService extends Service {
     private int mCount = 0;
     private OnPingServiceListener mOnDataArrivedListener;
     private String ipAddress;
+    private Record record;
 
 
     public void setOnPingServiceListener(OnPingServiceListener listener)
@@ -46,6 +54,20 @@ public class PingService extends Service {
                 if (mOnDataArrivedListener != null) {
                     mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken());
                 }
+
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
+                Date date = new Date(System.currentTimeMillis());
+                RecordItem item = new RecordItem(null,simpleDateFormat.format(date),pingStats.getAverageTimeTaken(),record.getId());
+                try{
+                    MyApplication.getmDaoSession().getRecordItemDao().insert(item);
+                    LogUtil.d("insert record item success:"+item.getId()+":"+item.getDate()+":"+item.getValue()+":"+item.getRecordId());
+                }catch (Exception e){
+                    LogUtil.e("insert record item error:");
+                    e.printStackTrace();
+                }
+
+
+
             }
 
             @Override
@@ -106,9 +128,10 @@ public class PingService extends Service {
         return true;
     }
 
-    public void startRecord(String ipAddress)
+    public void startRecord(Record record,String ipAddress)
     {
         this.ipAddress = ipAddress;
+        this.record = record;
         runFlag = true;
         mCount = 0;
         mThreadPool = Executors.newScheduledThreadPool(1);

@@ -1,5 +1,5 @@
 package cn.gdmcmc.www.demo.service;
 
 public interface OnPingServiceListener {
-    public void onPingResult(float data);
+    void onPingResult(float data);
 }

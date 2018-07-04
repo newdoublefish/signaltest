@@ -27,6 +27,8 @@ public class RecordDao extends AbstractDao<Record, Long> {
         public final static Property Ipaddress = new Property(2, String.class, "ipaddress", false, "IPADDRESS");
     }
 
+    private DaoSession daoSession;
+
 
     public RecordDao(DaoConfig config) {
         super(config);
@@ -34,6 +36,7 @@ public class RecordDao extends AbstractDao<Record, Long> {
     
     public RecordDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
+        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
@@ -89,6 +92,12 @@ public class RecordDao extends AbstractDao<Record, Long> {
         if (ipaddress != null) {
             stmt.bindString(3, ipaddress);
         }
+    }
+
+    @Override
+    protected final void attachEntity(Record entity) {
+        super.attachEntity(entity);
+        entity.__setDaoSession(daoSession);
     }
 
     @Override

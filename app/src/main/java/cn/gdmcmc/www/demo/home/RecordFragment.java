@@ -1,5 +1,6 @@
 package cn.gdmcmc.www.demo.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +21,7 @@ import butterknife.Unbinder;
 import cn.gdmcmc.www.demo.R;
 import cn.gdmcmc.www.demo.application.MyApplication;
 import cn.gdmcmc.www.demo.dao.Record;
+import cn.gdmcmc.www.demo.ping.PingResultActivity;
 import cn.gdmcmc.www.demo.util.LogUtil;
 import coder.mylibrary.base.BaseFragment;
 
@@ -67,11 +69,16 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
             @Override
             public void onItemClick(int position, BaseViewHolder holder) {
                 LogUtil.d("-------onItemClick-----------------");
+                Intent intent = new Intent(getHoldingActivity(), PingResultActivity.class);
+
+                intent.putExtra("current", records.get(position).getId());
+                LogUtil.d("onitem click record id:"+records.get(position).getId());
+                startActivity(intent);
+
             }
         });
         devicesRecyclerView.setRefreshListener(this);
     }
-
 
     @Override
     public void onLoadMore() {
@@ -84,7 +91,6 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
         initData();
         recordAdapter.addAll(records);
     }
-
     private void initData(){
         records = MyApplication.getmDaoSession().getRecordDao().loadAll();
     }

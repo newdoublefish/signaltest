@@ -120,7 +120,7 @@ public class PingFragment extends BaseFragment implements PingContract.View{
         switch (view.getId()) {
             case R.id.pingButton:
                 if (startBtn.getText().toString().equals("Start")) {
-                    mPingService.startRecord(editIpAddress.getText().toString());
+
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
                     Date date = new Date(System.currentTimeMillis());
                     Record record = new Record(null,simpleDateFormat.format(date),editIpAddress.getText().toString());
@@ -130,7 +130,7 @@ public class PingFragment extends BaseFragment implements PingContract.View{
                     }catch (Exception e){
                         Toast.makeText(getHoldingActivity(),"插入失败",Toast.LENGTH_SHORT).show();
                     }
-
+                    mPingService.startRecord(record,editIpAddress.getText().toString());
                     runFlag = true;
                     startBtn.setText("Stop");
                     mPointValues.clear();
