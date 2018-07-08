@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.stealthcopter.networktools.Ping;
 import com.stealthcopter.networktools.ping.PingResult;
@@ -47,6 +47,7 @@ import lecho.lib.hellocharts.model.ValueShape;
 import lecho.lib.hellocharts.model.Viewport;
 import lecho.lib.hellocharts.view.LineChartView;
 
+//界面参考 http://www.zcool.com.cn/work/ZMTg0NTg0NDQ=.html
 public class PingFragment extends BaseFragment implements PingContract.View{
     private String TAG = "PingFragment";
     private Unbinder unbinder;
@@ -71,8 +72,8 @@ public class PingFragment extends BaseFragment implements PingContract.View{
             mPingService = ((PingService.PingBinder)service).getService();
             //回调监听
             // Tell the user about this for our demo.
-            Toast.makeText(getHoldingActivity(),"已经链接",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getHoldingActivity(),"已经链接",
+            //        Toast.LENGTH_SHORT).show();
             mIsBound = true;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -92,7 +93,7 @@ public class PingFragment extends BaseFragment implements PingContract.View{
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            textView.setText(data+ " ms");
+                            textView.setText(String.format("%.2f ms", data));
                         }
                     });
                 }
@@ -103,8 +104,8 @@ public class PingFragment extends BaseFragment implements PingContract.View{
 
         public void onServiceDisconnected(ComponentName className) {
             mPingService = null;
-            Toast.makeText(getHoldingActivity(), "未链接",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getHoldingActivity(), "未链接",
+            //        Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -126,9 +127,10 @@ public class PingFragment extends BaseFragment implements PingContract.View{
                     Record record = new Record(null,simpleDateFormat.format(date),editIpAddress.getText().toString());
                     try{
                         MyApplication.getmDaoSession().getRecordDao().insert(record);
-                        Toast.makeText(getHoldingActivity(),"插入成功"+record.getId(),Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getHoldingActivity(),"插入成功"+record.getId(),Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
-                        Toast.makeText(getHoldingActivity(),"插入失败",Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getHoldingActivity(),"插入失败",Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
                     }
                     mPingService.startRecord(record,editIpAddress.getText().toString());
                     runFlag = true;

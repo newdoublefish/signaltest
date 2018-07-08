@@ -38,6 +38,7 @@ public class DeviceAdapter extends RecyclerArrayAdapter<DeviceBean.DeviceEntity>
 
     public interface OnMyItemClickListener{
         void onItemClick(int position,BaseViewHolder holder);
+        void onItemLongClick(int position,BaseViewHolder holder);
     }
 
     public void setOnMyItemClickListener(OnMyItemClickListener listener){

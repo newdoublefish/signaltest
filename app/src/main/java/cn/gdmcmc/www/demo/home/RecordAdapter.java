@@ -30,6 +30,16 @@ public class RecordAdapter extends RecyclerArrayAdapter<Record> {
                 }
             }
         });
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(onMyItemClickListener!=null){
+                    onMyItemClickListener.onItemLongClick(position,holder);
+                }
+                return true;
+            }
+        });
     }
 
     public interface OnMyItemClickListener{
@@ -38,5 +48,9 @@ public class RecordAdapter extends RecyclerArrayAdapter<Record> {
 
     public void setOnMyItemClickListener(DeviceAdapter.OnMyItemClickListener listener){
         this.onMyItemClickListener=listener;
+    }
+
+    public void removeItem(int pos){
+        notifyItemRemoved(pos);
     }
 }

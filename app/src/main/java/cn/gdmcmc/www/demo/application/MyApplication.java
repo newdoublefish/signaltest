@@ -11,6 +11,7 @@ import cn.gdmcmc.www.demo.application.exception.LocalFileHandler;
 import cn.gdmcmc.www.demo.dao.DaoMaster;
 import cn.gdmcmc.www.demo.dao.DaoSession;
 import cn.gdmcmc.www.demo.util.LogUtil;
+import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
 import cn.gdmcmc.www.demo.util.ToastUtil;
 import okhttp3.OkHttpClient;
 
@@ -34,6 +35,8 @@ public class MyApplication extends Application {
         ToastUtil.isShow = true;
 
         setupDatabase(this);
+
+        SharedPreferencesUtil.init(this);
 
         //配置程序异常退出处理
         //Thread.setDefaultUncaughtExceptionHandler(new LocalFileHandler(this));

@@ -78,6 +78,11 @@ public class DeviceFragment extends BaseFragment implements DeviceContract.View,
             public void onItemClick(int position, BaseViewHolder holder) {
                 LogUtil.d("-------onItemClick-----------------");
             }
+
+            @Override
+            public void onItemLongClick(int position, BaseViewHolder holder) {
+
+            }
         });
         devicesRecyclerView.setRefreshListener(this);
     }

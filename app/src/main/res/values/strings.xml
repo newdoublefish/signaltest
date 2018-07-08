@@ -1,7 +1,8 @@
 <resources>
-    <string name="app_name">Demo</string>
-    <string name="version_str">www.gdwcwc.cn</string>
-    <string name="devices">设备</string>
+    <string name="app_name">网络测试工具</string>
+    <string name="version_str">mcmc</string>
+    <string name="devices">测试</string>
+    <string name="history">历史记录</string>
     <string name="settings">设置</string>
     <string name="action_about">关于</string>
 </resources>

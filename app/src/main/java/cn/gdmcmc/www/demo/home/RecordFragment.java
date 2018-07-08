@@ -3,10 +3,13 @@ package cn.gdmcmc.www.demo.home;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewStub;
+import android.widget.Toast;
 
 import com.jude.easyrecyclerview.EasyRecyclerView;
 import com.jude.easyrecyclerview.adapter.BaseViewHolder;
@@ -21,10 +24,12 @@ import butterknife.Unbinder;
 import cn.gdmcmc.www.demo.R;
 import cn.gdmcmc.www.demo.application.MyApplication;
 import cn.gdmcmc.www.demo.dao.Record;
+import cn.gdmcmc.www.demo.dao.RecordItem;
 import cn.gdmcmc.www.demo.ping.PingResultActivity;
 import cn.gdmcmc.www.demo.util.LogUtil;
 import coder.mylibrary.base.BaseFragment;
-
+//TODO:https://blog.csdn.net/qq_34414005/article/details/53448048 长按删除
+//
 public class RecordFragment extends BaseFragment implements RecordContract.View,SwipeRefreshLayout.OnRefreshListener, RecyclerArrayAdapter.OnLoadMoreListener {
     public static String TAG = "RecordFragment";
     RecordContract.Presenter presenter;
@@ -56,6 +61,37 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
         presenter.start();
     }
 
+    public void showPopMenu(View view,final int pos){
+        PopupMenu popupMenu = new PopupMenu(getHoldingActivity(),view);
+        popupMenu.getMenuInflater().inflate(R.menu.menu_record,popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                recordAdapter.removeItem(pos);
+                try{
+                    for (RecordItem recordItem:records.get(pos).getItems())
+                    {
+                        MyApplication.getmDaoSession().getRecordItemDao().delete(recordItem);
+                    }
+                    MyApplication.getmDaoSession().getRecordDao().delete(records.get(pos));
+                    records.remove(pos);
+                    recordAdapter.clear();
+                    recordAdapter.addAll(records);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        });
+        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+            @Override
+            public void onDismiss(PopupMenu menu) {
+                //Toast.makeText(getHoldingActivity(), "关闭PopupMenu", Toast.LENGTH_SHORT).show();
+            }
+        });
+        popupMenu.show();
+    }
+
+
     private void initRecyclerView(){
         RecyclerView.LayoutManager staggerdGridLayoutManager;
         staggerdGridLayoutManager=new StaggeredGridLayoutManager(1,StaggeredGridLayoutManager.VERTICAL);
@@ -74,6 +110,13 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
                 intent.putExtra("current", records.get(position).getId());
                 LogUtil.d("onitem click record id:"+records.get(position).getId());
                 startActivity(intent);
+
+            }
+
+            @Override
+            public void onItemLongClick(int position, BaseViewHolder holder) {
+                LogUtil.d("-------onItemLongClick-----------------");
+                showPopMenu(holder.itemView,position);
 
             }
         });

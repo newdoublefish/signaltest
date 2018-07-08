@@ -11,6 +11,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -31,6 +34,8 @@ public class HomeActivity extends AppActivity {
     Button btn1;
     @BindView(R.id.btn2)
     Button btn2;
+    @BindView(R.id.btn3)
+    Button btn3;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.home_layout)
@@ -40,7 +45,7 @@ public class HomeActivity extends AppActivity {
     BaseFragment firstFragment;
     BaseFragment secondFragment;
     PingService mPingservice;
-
+    List<Button> btnList=new ArrayList<Button>();
     @Override
     protected int getContentViewId() {
         return R.layout.activity_home;
@@ -50,16 +55,35 @@ public class HomeActivity extends AppActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         unbinder = ButterKnife.bind(this);
+        btnList.add(btn1);
+        btnList.add(btn2);
+        btnList.add(btn3);
         toolbar.setTitle(R.string.app_name);
         setSupportActionBar(toolbar);
         secondFragment = new RecordFragment();
 
-        btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
-        btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+        //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+        //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+        clickButton(0);
 
         Intent intent = new Intent(HomeActivity.this,
                 PingService.class);
         startService(intent);
+    }
+
+    private void clickButton(int index)
+    {
+        int i=0;
+        for (Button btn:btnList
+             ) {
+            if(i==index)
+            {
+                btn.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+            }else{
+                btn.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+            }
+            i++;
+        }
     }
 
     @Override
@@ -85,18 +109,26 @@ public class HomeActivity extends AppActivity {
         unbinder.unbind();
     }
 
-    @OnClick({R.id.btn1, R.id.btn2})
+    @OnClick({R.id.btn1, R.id.btn2, R.id.btn3})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn1:
                 this.addFragment(firstFragment);
-                btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
-                btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+                //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+                //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+                clickButton(0);
                 break;
             case R.id.btn2:
                 this.addFragment(secondFragment);
-                btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
-                btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+                //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+                //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+                clickButton(1);
+                break;
+            case R.id.btn3:
+                this.addFragment(secondFragment);
+                //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
+                //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar));
+                clickButton(2);
                 break;
         }
     }
