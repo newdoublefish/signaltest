@@ -9,7 +9,6 @@ import coder.mylibrary.base.BaseFragment;
 public class PingResultActivity extends AppActivity {
     @Override
     protected BaseFragment getFirstFragment() {
-        ;
         return PingResultFragment.getInstance(getIntent().getLongExtra("current", 0));
     }
 

@@ -11,13 +11,16 @@ public class RecordItem {
     @Id(autoincrement = true)
     private Long id;
     private String date;
-    private float value;
+    private float delay;
+    private float signal;
     private Long recordId;
-    @Generated(hash = 872452715)
-    public RecordItem(Long id, String date, float value, Long recordId) {
+    @Generated(hash = 174789671)
+    public RecordItem(Long id, String date, float delay, float signal,
+            Long recordId) {
         this.id = id;
         this.date = date;
-        this.value = value;
+        this.delay = delay;
+        this.signal = signal;
         this.recordId = recordId;
     }
     @Generated(hash = 260571639)
@@ -35,16 +38,22 @@ public class RecordItem {
     public void setDate(String date) {
         this.date = date;
     }
-    public float getValue() {
-        return this.value;
-    }
-    public void setValue(float value) {
-        this.value = value;
-    }
     public void setRecordId(Long recordId) {
         this.recordId = recordId;
     }
     public Long getRecordId() {
         return this.recordId;
+    }
+    public float getDelay() {
+        return this.delay;
+    }
+    public void setDelay(float delay) {
+        this.delay = delay;
+    }
+    public float getSignal() {
+        return this.signal;
+    }
+    public void setSignal(float signal) {
+        this.signal = signal;
     }
 }

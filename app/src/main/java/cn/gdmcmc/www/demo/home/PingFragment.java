@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.stealthcopter.networktools.Ping;
@@ -31,10 +32,12 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import cn.gdmcmc.www.demo.R;
+import cn.gdmcmc.www.demo.application.Constants;
 import cn.gdmcmc.www.demo.application.MyApplication;
 import cn.gdmcmc.www.demo.dao.Record;
 import cn.gdmcmc.www.demo.service.OnPingServiceListener;
 import cn.gdmcmc.www.demo.service.PingService;
+import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
 import coder.mylibrary.base.BaseFragment;
 import lecho.lib.hellocharts.gesture.ContainerScrollType;
 import lecho.lib.hellocharts.gesture.ZoomType;
@@ -56,10 +59,10 @@ public class PingFragment extends BaseFragment implements PingContract.View{
     Button startBtn;
     @BindView(R.id.chart)
     LineChartView lineChart;
-    @BindView(R.id.editIpAddress)
-    EditText editIpAddress;
-    @BindView(R.id.text)
+    @BindView(R.id.delay)
     TextView textView;
+    @BindView(R.id.signal)
+    TextView signalView;
 
     private Boolean runFlag = false;
     private List<PointValue> mPointValues = new ArrayList<PointValue>();
@@ -88,12 +91,14 @@ public class PingFragment extends BaseFragment implements PingContract.View{
 
             mPingService.setOnPingServiceListener(new OnPingServiceListener() {
                 @Override
-                public void onPingResult(final float data) {
+                public void onPingResult(final float data,final int signal) {
                     //不是在主线程，不能直接操作主UI,切换到主线程
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            signalView.setText(String.format("%d dbm",signal));
                             textView.setText(String.format("%.2f ms", data));
+
                         }
                     });
                 }
@@ -122,18 +127,20 @@ public class PingFragment extends BaseFragment implements PingContract.View{
             case R.id.pingButton:
                 if (startBtn.getText().toString().equals("Start")) {
 
+                    String ipaddress = SharedPreferencesUtil.getInstance().getSaveStringData(Constants.IPADDRESS_PRE,getHoldingActivity().getString(R.string.default_ip));
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
                     Date date = new Date(System.currentTimeMillis());
-                    Record record = new Record(null,simpleDateFormat.format(date),editIpAddress.getText().toString());
+                    Record record = new Record(null,simpleDateFormat.format(date),ipaddress);
                     try{
                         MyApplication.getmDaoSession().getRecordDao().insert(record);
-                        //Toast.makeText(getHoldingActivity(),"插入成功"+record.getId(),Toast.LENGTH_SHORT).show();
                     }catch (Exception e){
-                        //Toast.makeText(getHoldingActivity(),"插入失败",Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
-                    mPingService.startRecord(record,editIpAddress.getText().toString());
+                    Toast.makeText(getHoldingActivity(),ipaddress,Toast.LENGTH_SHORT).show();
+                    mPingService.startRecord(record,ipaddress);
                     runFlag = true;
+                    HomeActivity mha = (HomeActivity)getHoldingActivity();
+                    mha.runFlag = true;
                     startBtn.setText("Stop");
                     mPointValues.clear();
                     mPointValues.clear();
@@ -160,6 +167,8 @@ public class PingFragment extends BaseFragment implements PingContract.View{
                 } else {
                     mPingService.stopRecord();
                     runFlag = false;
+                    HomeActivity mha = (HomeActivity)getHoldingActivity();
+                    mha.runFlag = false;
                 }
                 break;
         }
@@ -263,47 +272,6 @@ public class PingFragment extends BaseFragment implements PingContract.View{
             }
         });
     }
-
-    private void doPing() throws Exception {
-        String ipAddress = editIpAddress.getText().toString();
-
-        if (TextUtils.isEmpty(ipAddress)) {
-            appendResultsText("Invalid Ip Address");
-            return;
-        }
-
-        // Perform a single synchronous ping
-        /*PingResult pingResult = Ping.onAddress(ipAddress).setTimeOutMillis(1000).doPing();
-
-        appendResultsText("Pinging Address: " + pingResult.getAddress().getHostAddress());
-        appendResultsText("HostName: " + pingResult.getAddress().getHostName());
-        appendResultsText(String.format("%.2f ms", pingResult.getTimeTaken()));*/
-
-
-        // Perform an asynchronous ping
-        Ping.onAddress(ipAddress).setTimeOutMillis(1000).setTimes(5).doPing(new Ping.PingListener() {
-            @Override
-            public void onResult(PingResult pingResult) {
-                //appendResultsText(String.format("%.2f ms", pingResult.getTimeTaken()));
-            }
-
-            @Override
-            public void onFinished(PingStats pingStats) {
-//                appendResultsText(String.format("Pings: %d, Packets lost: %d",
-//                        pingStats.getNoPings(), pingStats.getPacketsLost()));
-//                appendResultsText(String.format("Min/Avg/Max Time: %.2f/%.2f/%.2f ms",
-//                        pingStats.getMinTimeTaken(), pingStats.getAverageTimeTaken(), pingStats.getMaxTimeTaken()));
-                painChart(pingStats.getAverageTimeTaken());
-            }
-
-            @Override
-            public void onError(Exception e) {
-                // TODO: STUB METHOD
-            }
-        });
-
-    }
-
 
     @Override
     public void onStart() {

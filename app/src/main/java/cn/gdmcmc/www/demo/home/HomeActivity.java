@@ -44,8 +44,10 @@ public class HomeActivity extends AppActivity {
     private long exitTime = 0;
     BaseFragment firstFragment;
     BaseFragment secondFragment;
+    BaseFragment thirdFragment;
     PingService mPingservice;
     List<Button> btnList=new ArrayList<Button>();
+    public Boolean runFlag = false;
     @Override
     protected int getContentViewId() {
         return R.layout.activity_home;
@@ -61,6 +63,7 @@ public class HomeActivity extends AppActivity {
         toolbar.setTitle(R.string.app_name);
         setSupportActionBar(toolbar);
         secondFragment = new RecordFragment();
+        thirdFragment = new SettingFragment();
 
         //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
         //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));
@@ -125,7 +128,7 @@ public class HomeActivity extends AppActivity {
                 clickButton(1);
                 break;
             case R.id.btn3:
-                this.addFragment(secondFragment);
+                this.addFragment(thirdFragment);
                 //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
                 //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar));
                 clickButton(2);

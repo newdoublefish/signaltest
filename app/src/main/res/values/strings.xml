@@ -5,4 +5,8 @@
     <string name="history">历史记录</string>
     <string name="settings">设置</string>
     <string name="action_about">关于</string>
+    <string name="ip">ip地址</string>
+    <string name="default_ip">www.baidu.com</string>
+    <string name="interval">测试间隔</string>
+    <string name="default_interval">2</string>
 </resources>

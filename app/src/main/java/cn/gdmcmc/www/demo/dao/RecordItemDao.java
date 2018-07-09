@@ -27,8 +27,9 @@ public class RecordItemDao extends AbstractDao<RecordItem, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Date = new Property(1, String.class, "date", false, "DATE");
-        public final static Property Value = new Property(2, float.class, "value", false, "VALUE");
-        public final static Property RecordId = new Property(3, Long.class, "recordId", false, "RECORD_ID");
+        public final static Property Delay = new Property(2, float.class, "delay", false, "DELAY");
+        public final static Property Signal = new Property(3, float.class, "signal", false, "SIGNAL");
+        public final static Property RecordId = new Property(4, Long.class, "recordId", false, "RECORD_ID");
     }
 
     private Query<RecordItem> record_ItemsQuery;
@@ -47,8 +48,9 @@ public class RecordItemDao extends AbstractDao<RecordItem, Long> {
         db.execSQL("CREATE TABLE " + constraint + "\"RECORD_ITEM\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "\"DATE\" TEXT," + // 1: date
-                "\"VALUE\" REAL NOT NULL ," + // 2: value
-                "\"RECORD_ID\" INTEGER);"); // 3: recordId
+                "\"DELAY\" REAL NOT NULL ," + // 2: delay
+                "\"SIGNAL\" REAL NOT NULL ," + // 3: signal
+                "\"RECORD_ID\" INTEGER);"); // 4: recordId
     }
 
     /** Drops the underlying database table. */
@@ -70,11 +72,12 @@ public class RecordItemDao extends AbstractDao<RecordItem, Long> {
         if (date != null) {
             stmt.bindString(2, date);
         }
-        stmt.bindDouble(3, entity.getValue());
+        stmt.bindDouble(3, entity.getDelay());
+        stmt.bindDouble(4, entity.getSignal());
  
         Long recordId = entity.getRecordId();
         if (recordId != null) {
-            stmt.bindLong(4, recordId);
+            stmt.bindLong(5, recordId);
         }
     }
 
@@ -91,11 +94,12 @@ public class RecordItemDao extends AbstractDao<RecordItem, Long> {
         if (date != null) {
             stmt.bindString(2, date);
         }
-        stmt.bindDouble(3, entity.getValue());
+        stmt.bindDouble(3, entity.getDelay());
+        stmt.bindDouble(4, entity.getSignal());
  
         Long recordId = entity.getRecordId();
         if (recordId != null) {
-            stmt.bindLong(4, recordId);
+            stmt.bindLong(5, recordId);
         }
     }
 
@@ -109,8 +113,9 @@ public class RecordItemDao extends AbstractDao<RecordItem, Long> {
         RecordItem entity = new RecordItem( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // date
-            cursor.getFloat(offset + 2), // value
-            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3) // recordId
+            cursor.getFloat(offset + 2), // delay
+            cursor.getFloat(offset + 3), // signal
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4) // recordId
         );
         return entity;
     }
@@ -119,8 +124,9 @@ public class RecordItemDao extends AbstractDao<RecordItem, Long> {
     public void readEntity(Cursor cursor, RecordItem entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setDate(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setValue(cursor.getFloat(offset + 2));
-        entity.setRecordId(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
+        entity.setDelay(cursor.getFloat(offset + 2));
+        entity.setSignal(cursor.getFloat(offset + 3));
+        entity.setRecordId(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
      }
     
     @Override

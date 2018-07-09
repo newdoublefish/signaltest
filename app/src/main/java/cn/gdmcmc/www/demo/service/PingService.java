@@ -27,10 +27,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import cn.gdmcmc.www.demo.R;
+import cn.gdmcmc.www.demo.application.Constants;
 import cn.gdmcmc.www.demo.application.MyApplication;
 import cn.gdmcmc.www.demo.dao.Record;
 import cn.gdmcmc.www.demo.dao.RecordItem;
 import cn.gdmcmc.www.demo.util.LogUtil;
+import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
 
 public class PingService extends Service {
     private static final String TAG = PingService.class.getSimpleName();
@@ -113,7 +116,7 @@ public class PingService extends Service {
             LogUtil.d(TAG,signalInfo);
             if(mTelephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_LTE){
                 //4G网络 最佳范围   >-90dBm 越大越好
-                int mGsmSignalStrength = Integer.parseInt(params[9]);
+                mGsmSignalStrength = Integer.parseInt(params[9]);
                 String yys = getVendor();
                 LogUtil.d(TAG,"vendor:"+yys+" dbm:"+mGsmSignalStrength+"");
             }else if(mTelephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_HSDPA ||
@@ -126,16 +129,20 @@ public class PingService extends Service {
                         if (yys=="中国移动") {
                             LogUtil.d(TAG,0+"");//中国移动3G不可获取，故在此返回0
                         }else if (yys=="中国联通") {
-                            int mGsmSignalStrength = signalStrength.getCdmaDbm();
+                            mGsmSignalStrength = signalStrength.getCdmaDbm();
                             LogUtil.d(TAG,mGsmSignalStrength+"");
                         }else if (yys=="中国电信") {
-                            int mGsmSignalStrength = signalStrength.getEvdoDbm();
+                            mGsmSignalStrength = signalStrength.getEvdoDbm();
+                            LogUtil.d(TAG,mGsmSignalStrength+"");
+                        }else{
+                            int asu = signalStrength.getGsmSignalStrength();
+                            mGsmSignalStrength = -113 + 2*asu;
                             LogUtil.d(TAG,mGsmSignalStrength+"");
                         }
             }else{
                         //2G网络最佳范围>-90dBm 越大越好
                         int asu = signalStrength.getGsmSignalStrength();
-                        int mGsmSignalStrength = -113 + 2*asu;
+                        mGsmSignalStrength = -113 + 2*asu;
                          LogUtil.d(TAG,mGsmSignalStrength+"");
             }
         }
@@ -167,14 +174,14 @@ public class PingService extends Service {
             @Override
             public void onFinished(PingStats pingStats) {
                 if (mOnDataArrivedListener != null) {
-                    mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken());
+                    mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken(),mGsmSignalStrength);
                 }
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
                 Date date = new Date(System.currentTimeMillis());
-                RecordItem item = new RecordItem(null,simpleDateFormat.format(date),pingStats.getAverageTimeTaken(),record.getId());
+                RecordItem item = new RecordItem(null,simpleDateFormat.format(date),pingStats.getAverageTimeTaken(),mGsmSignalStrength,record.getId());
                 try{
                     MyApplication.getmDaoSession().getRecordItemDao().insert(item);
-                    LogUtil.d(TAG,"insert record item success:"+item.getId()+":"+item.getDate()+":"+item.getValue()+":"+item.getRecordId());
+                    LogUtil.d(TAG,"insert record item success:"+item.getId()+":"+item.getDate()+":"+item.getDelay()+":"+item.getSignal()+":"+item.getRecordId());
                 }catch (Exception e){
                     LogUtil.e(TAG,"insert record item error:");
                     e.printStackTrace();
@@ -244,7 +251,9 @@ public class PingService extends Service {
         runFlag = true;
         mCount = 0;
         mThreadPool = Executors.newScheduledThreadPool(1);
-        mThreadPool.scheduleAtFixedRate(task, 0, 2000, TimeUnit.MILLISECONDS);
+        String timeinterval = SharedPreferencesUtil.getInstance().getSaveStringData(Constants.INTERVAL_PRE,this.getString(R.string.default_interval));
+        int interval = Integer.parseInt(timeinterval) * 1000;
+        mThreadPool.scheduleAtFixedRate(task, 0, interval, TimeUnit.MILLISECONDS);
     }
 
     public boolean getRecord()

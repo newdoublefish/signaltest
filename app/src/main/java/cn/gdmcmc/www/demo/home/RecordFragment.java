@@ -6,6 +6,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewStub;
@@ -16,6 +17,7 @@ import com.jude.easyrecyclerview.adapter.BaseViewHolder;
 import com.jude.easyrecyclerview.adapter.RecyclerArrayAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -98,8 +100,8 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
         devicesRecyclerView.setLayoutManager(staggerdGridLayoutManager);
         recordAdapter=new RecordAdapter(getContext());
         devicesRecyclerView.setAdapter(recordAdapter);
-        recordAdapter.setMore(R.layout.load_more_layout,this);
-        recordAdapter.setNoMore(R.layout.no_more_layout);
+        //recordAdapter.setMore(R.layout.load_more_layout,this);
+        //recordAdapter.setNoMore(R.layout.no_more_layout);
         recordAdapter.setError(R.layout.network_error);
         recordAdapter.setOnMyItemClickListener(new DeviceAdapter.OnMyItemClickListener() {
             @Override
@@ -109,7 +111,14 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
 
                 intent.putExtra("current", records.get(position).getId());
                 LogUtil.d("onitem click record id:"+records.get(position).getId());
-                startActivity(intent);
+                HomeActivity mha = (HomeActivity)getHoldingActivity();
+                LogUtil.d(TAG,"current click "+position+";"+mha.runFlag);
+                if(mha.runFlag && position == 0)
+                {
+                    Toast.makeText(getHoldingActivity(),records.get(position).getName()+"正在测试中",Toast.LENGTH_SHORT).show();
+                }else {
+                    startActivity(intent);
+                }
 
             }
 
@@ -136,6 +145,7 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
     }
     private void initData(){
         records = MyApplication.getmDaoSession().getRecordDao().loadAll();
+        Collections.reverse(records);
     }
 
 }
