@@ -1,5 +1,8 @@
 package cn.gdmcmc.www.demo.service;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +11,9 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
@@ -36,6 +41,7 @@ import cn.gdmcmc.www.demo.util.LogUtil;
 import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
 
 //https://www.cnblogs.com/zhujiabin/p/5404771.html 线程池问题
+//https://blog.csdn.net/u013078044/article/details/64123663 休眠运行问题
 public class PingService extends Service {
     private static final String TAG = PingService.class.getSimpleName();
     private final IBinder mBinder = new PingBinder();
@@ -48,6 +54,9 @@ public class PingService extends Service {
     private TelephonyManager mTelephonyManager;
     private PhoneStatListener mListener;
     public int mGsmSignalStrength;
+    private PowerManager.WakeLock wakeLock = null;
+    private static final String CHANNEL_ID = "11111";
+    private static final String CHANNEL_NAME = "ForegroundServiceChannel";
 
 
     private boolean isFastMobileNetwork() {
@@ -152,6 +161,20 @@ public class PingService extends Service {
     @Override
     public void onCreate() {
         LogUtil.d(TAG,"-------onCreate----------");
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH);
+
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(channel);
+
+            Notification notification = new Notification.Builder(getApplicationContext(), CHANNEL_ID).build();
+            startForeground(1, notification);
+        }
+
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, PingService.class.getName());
+        wakeLock.acquire();
         mTelephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         mListener=new PhoneStatListener();
         mTelephonyManager.listen(mListener, PhoneStatListener.LISTEN_SIGNAL_STRENGTHS);
@@ -205,13 +228,32 @@ public class PingService extends Service {
 
     }
 
+    private void doPingSync(String ipAddress) throws Exception {
+        // Perform an asynchronous ping
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
+        PingResult pingResult = Ping.onAddress(ipAddress).setTimeOutMillis(500).doPing();
+        if (mOnDataArrivedListener != null) {
+            mOnDataArrivedListener.onPingResult(pingResult.getTimeTaken(),mGsmSignalStrength);
+        }
+        RecordItem item = new RecordItem(null,simpleDateFormat.format(date),pingResult.getTimeTaken(),mGsmSignalStrength,record.getId());
+        try{
+            MyApplication.getmDaoSession().getRecordItemDao().insert(item);
+            LogUtil.d(TAG,"insert record item success:"+item.getId()+":"+item.getDate()+":"+item.getDelay()+":"+item.getSignal()+":"+item.getRecordId());
+        }catch (Exception e){
+            LogUtil.e(TAG,"insert record item error:");
+            e.printStackTrace();
+        }
+
+    }
+
 
     final TimerTask task = new TimerTask() {
 
         @Override
         public void run() {
             try {
-                    doPing(ipAddress);
+                    doPingSync(ipAddress);
                     LogUtil.d("after invoke doping");
             }catch (Exception e){
                 e.printStackTrace();
@@ -240,6 +282,10 @@ public class PingService extends Service {
     @Override
     public void onDestroy() {
         Toast.makeText(this, "ping service destroy!!", Toast.LENGTH_SHORT).show();
+        if (wakeLock != null) {
+            wakeLock.release();
+            wakeLock = null;
+        }
     }
 
     @Override

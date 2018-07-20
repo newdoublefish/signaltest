@@ -2,6 +2,7 @@ package cn.gdmcmc.www.demo.home;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -72,7 +73,16 @@ public class HomeActivity extends AppActivity {
 
         Intent intent = new Intent(HomeActivity.this,
                 PingService.class);
-        startService(intent);
+
+        //startService(intent);
+        if (Build.VERSION.SDK_INT >= 26) {
+            LogUtil.d(TAG,"startForegroudService");
+            this.startForegroundService(intent);
+        } else {
+            // Pre-O behavior.
+            LogUtil.d(TAG,"startService");
+            this.startService(intent);
+        }
     }
 
     private void clickButton(int index)
