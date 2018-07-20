@@ -32,21 +32,19 @@ import cn.gdmcmc.www.demo.util.LogUtil;
 import coder.mylibrary.base.BaseFragment;
 //TODO:https://blog.csdn.net/qq_34414005/article/details/53448048 长按删除
 //
-public class RecordFragment extends BaseFragment implements RecordContract.View,SwipeRefreshLayout.OnRefreshListener, RecyclerArrayAdapter.OnLoadMoreListener {
+public class RecordFragment extends BaseFragment implements RecordContract.View,RecyclerArrayAdapter.OnLoadMoreListener {
     public static String TAG = "RecordFragment";
     RecordContract.Presenter presenter;
     Unbinder unbinder;
-    @BindView(R.id.network_error_layout)
-    ViewStub networkErrorLayout;
     @BindView(R.id.devices_recycler_view)
     EasyRecyclerView devicesRecyclerView;
 
     private RecordAdapter recordAdapter;
     private List<Record> records;
-    @Override
-    public void onRefresh() {
-
-    }
+//    @Override
+//    public void onRefresh() {
+//
+//    }
 
     @Override
     protected int getLayoutId() {
@@ -98,11 +96,11 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
         RecyclerView.LayoutManager staggerdGridLayoutManager;
         staggerdGridLayoutManager=new StaggeredGridLayoutManager(1,StaggeredGridLayoutManager.VERTICAL);
         devicesRecyclerView.setLayoutManager(staggerdGridLayoutManager);
-        recordAdapter=new RecordAdapter(getContext());
+        recordAdapter=new RecordAdapter(getHoldingActivity());
         devicesRecyclerView.setAdapter(recordAdapter);
         //recordAdapter.setMore(R.layout.load_more_layout,this);
         //recordAdapter.setNoMore(R.layout.no_more_layout);
-        recordAdapter.setError(R.layout.network_error);
+        //recordAdapter.setError(R.layout.network_error);
         recordAdapter.setOnMyItemClickListener(new DeviceAdapter.OnMyItemClickListener() {
             @Override
             public void onItemClick(int position, BaseViewHolder holder) {
@@ -129,7 +127,7 @@ public class RecordFragment extends BaseFragment implements RecordContract.View,
 
             }
         });
-        devicesRecyclerView.setRefreshListener(this);
+        //devicesRecyclerView.setRefreshListener(this);
     }
 
     @Override

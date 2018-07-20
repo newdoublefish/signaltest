@@ -35,6 +35,7 @@ import cn.gdmcmc.www.demo.dao.RecordItem;
 import cn.gdmcmc.www.demo.util.LogUtil;
 import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
 
+//https://www.cnblogs.com/zhujiabin/p/5404771.html 线程池问题
 public class PingService extends Service {
     private static final String TAG = PingService.class.getSimpleName();
     private final IBinder mBinder = new PingBinder();
@@ -173,11 +174,18 @@ public class PingService extends Service {
 
             @Override
             public void onFinished(PingStats pingStats) {
-                if (mOnDataArrivedListener != null) {
-                    mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken(),mGsmSignalStrength);
+                LogUtil.e(TAG,"onFinished");
+                if(mGsmSignalStrength>0) //有时会出现非常大的正值，原因是无法识别到是哪个运营商
+                {
+                    mGsmSignalStrength = -200;
                 }
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
                 Date date = new Date(System.currentTimeMillis());
+                if (mOnDataArrivedListener != null) {
+                    mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken(),mGsmSignalStrength);
+                }
+
+
                 RecordItem item = new RecordItem(null,simpleDateFormat.format(date),pingStats.getAverageTimeTaken(),mGsmSignalStrength,record.getId());
                 try{
                     MyApplication.getmDaoSession().getRecordItemDao().insert(item);
@@ -191,6 +199,7 @@ public class PingService extends Service {
             @Override
             public void onError(Exception e) {
                 // TODO: STUB METHOD
+                LogUtil.e(TAG,"onError");
             }
         });
 
@@ -202,9 +211,10 @@ public class PingService extends Service {
         @Override
         public void run() {
             try {
-                doPing(ipAddress);
+                    doPing(ipAddress);
+                    LogUtil.d("after invoke doping");
             }catch (Exception e){
-
+                e.printStackTrace();
             }
 
         }
@@ -244,15 +254,15 @@ public class PingService extends Service {
         return true;
     }
 
-    public void startRecord(Record record,String ipAddress)
+    public void startRecord(Record record,String ipAddress,int interval)
     {
         this.ipAddress = ipAddress;
         this.record = record;
         runFlag = true;
         mCount = 0;
         mThreadPool = Executors.newScheduledThreadPool(1);
-        String timeinterval = SharedPreferencesUtil.getInstance().getSaveStringData(Constants.INTERVAL_PRE,this.getString(R.string.default_interval));
-        int interval = Integer.parseInt(timeinterval) * 1000;
+        //String timeinterval = SharedPreferencesUtil.getInstance().getSaveStringData(Constants.INTERVAL_PRE,this.getString(R.string.default_interval));
+        //int interval = Integer.parseInt(timeinterval) * 1000;
         mThreadPool.scheduleAtFixedRate(task, 0, interval, TimeUnit.MILLISECONDS);
     }
 
@@ -269,6 +279,4 @@ public class PingService extends Service {
             mCount = 0;
         }
     }
-
-
 }

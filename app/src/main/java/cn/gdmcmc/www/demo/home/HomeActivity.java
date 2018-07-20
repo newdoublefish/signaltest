@@ -1,5 +1,6 @@
 package cn.gdmcmc.www.demo.home;
 
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
@@ -44,7 +45,7 @@ public class HomeActivity extends AppActivity {
     private long exitTime = 0;
     BaseFragment firstFragment;
     BaseFragment secondFragment;
-    BaseFragment thirdFragment;
+    Fragment thirdFragment;
     PingService mPingservice;
     List<Button> btnList=new ArrayList<Button>();
     public Boolean runFlag = false;
@@ -63,7 +64,7 @@ public class HomeActivity extends AppActivity {
         toolbar.setTitle(R.string.app_name);
         setSupportActionBar(toolbar);
         secondFragment = new RecordFragment();
-        thirdFragment = new SettingFragment();
+        thirdFragment = new SettingPrefFragment();
 
         //btn1.setBackgroundColor(getResources().getColor(R.color.menu_bar_pressed));
         //btn2.setBackgroundColor(getResources().getColor(R.color.menu_bar));

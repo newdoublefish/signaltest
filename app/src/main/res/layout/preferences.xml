@@ -4,14 +4,14 @@
     android:layout_height="match_parent">
     <PreferenceCategory android:title="参数设置" >
         <EditTextPreference
-            android:dialogTitle="EditTextPreference"
-            android:key="edittext_ipaddress"
-            android:summary="IP地址"
+            android:dialogTitle="请输入ip地址或者域名"
+            android:key="@string/key_address"
+            android:summary="ip地址或者域名"
             android:title="IP地址" />
         <EditTextPreference
-            android:dialogTitle="EditTextPreference"
-            android:key="edittext_interval"
+            android:dialogTitle="请输入时间间隔"
+            android:key="@string/key_interval"
             android:summary="时间间隔"
-            android:title="时间间隔" />
+            android:title="设置测试时间间隔" />
     </PreferenceCategory>
 </PreferenceScreen>

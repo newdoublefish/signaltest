@@ -5,9 +5,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -126,8 +128,9 @@ public class PingFragment extends BaseFragment implements PingContract.View{
         switch (view.getId()) {
             case R.id.pingButton:
                 if (startBtn.getText().toString().equals("Start")) {
-
-                    String ipaddress = SharedPreferencesUtil.getInstance().getSaveStringData(Constants.IPADDRESS_PRE,getHoldingActivity().getString(R.string.default_ip));
+                    SharedPreferences sharedpreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                    String ipaddress = sharedpreferences.getString(getActivity().getString(R.string.key_address),getActivity().getString(R.string.default_ip));
+                    String interval = sharedpreferences.getString(getActivity().getString(R.string.key_interval),getActivity().getString(R.string.default_interval));
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
                     Date date = new Date(System.currentTimeMillis());
                     Record record = new Record(null,simpleDateFormat.format(date),ipaddress);
@@ -136,8 +139,8 @@ public class PingFragment extends BaseFragment implements PingContract.View{
                     }catch (Exception e){
                         e.printStackTrace();
                     }
-                    Toast.makeText(getHoldingActivity(),ipaddress,Toast.LENGTH_SHORT).show();
-                    mPingService.startRecord(record,ipaddress);
+                    Toast.makeText(getHoldingActivity(),ipaddress+":"+interval+"s",Toast.LENGTH_SHORT).show();
+                    mPingService.startRecord(record,ipaddress,Integer.parseInt(interval)*1000);
                     runFlag = true;
                     HomeActivity mha = (HomeActivity)getHoldingActivity();
                     mha.runFlag = true;

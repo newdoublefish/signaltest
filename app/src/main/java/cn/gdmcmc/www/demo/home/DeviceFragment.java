@@ -31,8 +31,8 @@ public class DeviceFragment extends BaseFragment implements DeviceContract.View,
     public static String TAG = "DeviceFragment";
     DeviceContract.Presenter presenter;
     Unbinder unbinder;
-    @BindView(R.id.network_error_layout)
-    ViewStub networkErrorLayout;
+    //@BindView(R.id.network_error_layout)
+    //ViewStub networkErrorLayout;
     @BindView(R.id.devices_recycler_view)
     EasyRecyclerView devicesRecyclerView;
 
@@ -68,7 +68,7 @@ public class DeviceFragment extends BaseFragment implements DeviceContract.View,
         RecyclerView.LayoutManager staggerdGridLayoutManager;
         staggerdGridLayoutManager=new StaggeredGridLayoutManager(1,StaggeredGridLayoutManager.VERTICAL);
         devicesRecyclerView.setLayoutManager(staggerdGridLayoutManager);
-        deviceAdapter=new DeviceAdapter(getContext());
+        deviceAdapter=new DeviceAdapter(getHoldingActivity());
         devicesRecyclerView.setAdapter(deviceAdapter);
         deviceAdapter.setMore(R.layout.load_more_layout,this);
         deviceAdapter.setNoMore(R.layout.no_more_layout);

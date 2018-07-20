@@ -1,5 +1,6 @@
 package coder.mylibrary.base;
 
+import android.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,10 +21,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     }
 
     //添加fragment
-    protected void addFragment(BaseFragment fragment) {
+    protected void addFragment(Fragment fragment) {
         if (fragment != null) {
             System.out.println("----addFragment----");
-            getSupportFragmentManager().beginTransaction()
+            getFragmentManager().beginTransaction()
                     .replace(getFragmentContentId(), fragment, fragment.getClass().getSimpleName())
                     .addToBackStack(fragment.getClass().getSimpleName())
                     .commitAllowingStateLoss();

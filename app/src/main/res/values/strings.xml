@@ -9,4 +9,6 @@
     <string name="default_ip">www.baidu.com</string>
     <string name="interval">测试间隔</string>
     <string name="default_interval">2</string>
+    <string name="key_address">edittext_ipaddress</string>
+    <string name="key_interval">edittext_interval</string>
 </resources>

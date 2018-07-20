@@ -42,6 +42,7 @@
         android:layout_height="wrap_content"
         android:text="Start"
         android:layout_alignParentBottom="true"
+        android:background="@drawable/shape"
         />
     <lecho.lib.hellocharts.view.LineChartView
         android:visibility="gone"
