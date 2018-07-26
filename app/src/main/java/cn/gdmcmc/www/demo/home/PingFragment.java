@@ -1,8 +1,10 @@
 package cn.gdmcmc.www.demo.home;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -40,6 +42,7 @@ import cn.gdmcmc.www.demo.dao.Record;
 import cn.gdmcmc.www.demo.service.OnPingServiceListener;
 import cn.gdmcmc.www.demo.service.PingService;
 import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
+import cn.gdmcmc.www.demo.util.ToastUtil;
 import coder.mylibrary.base.BaseFragment;
 import lecho.lib.hellocharts.gesture.ContainerScrollType;
 import lecho.lib.hellocharts.gesture.ZoomType;
@@ -65,6 +68,8 @@ public class PingFragment extends BaseFragment implements PingContract.View{
     TextView textView;
     @BindView(R.id.signal)
     TextView signalView;
+    @BindView(R.id.vendor)
+    TextView vendorTextView;
 
     private Boolean runFlag = false;
     private List<PointValue> mPointValues = new ArrayList<PointValue>();
@@ -93,14 +98,27 @@ public class PingFragment extends BaseFragment implements PingContract.View{
 
             mPingService.setOnPingServiceListener(new OnPingServiceListener() {
                 @Override
-                public void onPingResult(final float data,final int signal) {
+                public void onPingResult(final float data,final int signal,final String vendor) {
                     //不是在主线程，不能直接操作主UI,切换到主线程
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             signalView.setText(String.format("%d dbm",signal));
                             textView.setText(String.format("%.2f ms", data));
+                            vendorTextView.setText(vendor);
 
+                        }
+                    });
+                }
+
+                @Override
+                public void onPingStatusChange(final boolean status) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            runFlag = status;
+                            if(!runFlag)
+                                startBtn.setText("Start");
                         }
                     });
                 }
@@ -123,50 +141,68 @@ public class PingFragment extends BaseFragment implements PingContract.View{
         pingPresenter = new PingPresenter(PingFragment.this);
     }
 
+
+
     @OnClick({R.id.pingButton})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.pingButton:
                 if (startBtn.getText().toString().equals("Start")) {
-                    SharedPreferences sharedpreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                    String ipaddress = sharedpreferences.getString(getActivity().getString(R.string.key_address),getActivity().getString(R.string.default_ip));
-                    String interval = sharedpreferences.getString(getActivity().getString(R.string.key_interval),getActivity().getString(R.string.default_interval));
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
-                    Date date = new Date(System.currentTimeMillis());
-                    Record record = new Record(null,simpleDateFormat.format(date),ipaddress);
-                    try{
-                        MyApplication.getmDaoSession().getRecordDao().insert(record);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    Toast.makeText(getHoldingActivity(),ipaddress+":"+interval+"s",Toast.LENGTH_SHORT).show();
-                    mPingService.startRecord(record,ipaddress,Integer.parseInt(interval)*1000);
-                    runFlag = true;
-                    HomeActivity mha = (HomeActivity)getHoldingActivity();
-                    mha.runFlag = true;
-                    startBtn.setText("Stop");
-                    mPointValues.clear();
-                    mPointValues.clear();
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            while (runFlag) {
-                                try {
-                                    //doPing();
-                                    Thread.sleep(1000);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                    final EditText inputServer = new EditText(getHoldingActivity()
+                    );
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getHoldingActivity());
+                    builder.setTitle("输入测试名称").setIcon(android.R.drawable.ic_dialog_info).setView(inputServer)
+                            .setNegativeButton("Cancel", null);
+                    builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(inputServer.getText().length()==0)
+                            {
+                                ToastUtil.showShort(getHoldingActivity(),"未输入测试名称");
+                                return;
                             }
-
-                            getActivity().runOnUiThread(new Runnable() {
+                            SharedPreferences sharedpreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                            String ipaddress = sharedpreferences.getString(getActivity().getString(R.string.key_address),getActivity().getString(R.string.default_ip));
+                            String interval = sharedpreferences.getString(getActivity().getString(R.string.key_interval),getActivity().getString(R.string.default_interval));
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
+                            Date date = new Date(System.currentTimeMillis());
+                            Record record = new Record(null,inputServer.getText().toString()+"_"+simpleDateFormat.format(date),ipaddress);
+                            try{
+                                MyApplication.getmDaoSession().getRecordDao().insert(record);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            Toast.makeText(getHoldingActivity(),ipaddress+":"+interval+"s",Toast.LENGTH_SHORT).show();
+                            mPingService.startRecord(record,ipaddress,Integer.parseInt(interval)*1000);
+                            runFlag = true;
+                            HomeActivity mha = (HomeActivity)getHoldingActivity();
+                            mha.runFlag = true;
+                            startBtn.setText("Stop");
+                            mPointValues.clear();
+                            mPointValues.clear();
+                            /*new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    startBtn.setText("Start");
+                                    while (runFlag) {
+                                        try {
+                                            //doPing();
+                                            Thread.sleep(1000);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            startBtn.setText("Start");
+                                        }
+                                    });
                                 }
-                            });
+                            }).start();*/
+
                         }
-                    }).start();
+                    });
+                    builder.show();
                 } else {
                     mPingService.stopRecord();
                     runFlag = false;

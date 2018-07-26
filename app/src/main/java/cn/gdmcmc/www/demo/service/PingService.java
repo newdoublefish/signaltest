@@ -42,6 +42,7 @@ import cn.gdmcmc.www.demo.util.SharedPreferencesUtil;
 
 //https://www.cnblogs.com/zhujiabin/p/5404771.html 线程池问题
 //https://blog.csdn.net/u013078044/article/details/64123663 休眠运行问题
+//https://blog.csdn.net/u013334392/article/details/76187594
 public class PingService extends Service {
     private static final String TAG = PingService.class.getSimpleName();
     private final IBinder mBinder = new PingBinder();
@@ -57,6 +58,7 @@ public class PingService extends Service {
     private PowerManager.WakeLock wakeLock = null;
     private static final String CHANNEL_ID = "11111";
     private static final String CHANNEL_NAME = "ForegroundServiceChannel";
+    private String vendor;
 
 
     private boolean isFastMobileNetwork() {
@@ -111,6 +113,60 @@ public class PingService extends Service {
         return "未知运营商";
     }
 
+    private String getOperatorName() {
+        String operator = mTelephonyManager.getSimOperator();
+        LogUtil.e(operator);
+        if (operator != null) {
+            if (operator.equals("46000") || operator.equals("46002")) {
+                // operatorName="中国移动";
+                //signalTextView.setText("中国移动");
+                vendor = "中国移动";
+                // Toast.makeText(this, "此卡属于(中国移动)",
+                // Toast.LENGTH_SHORT).show();
+            } else if (operator.equals("46001")) {
+                // operatorName="中国联通";
+                vendor = "中国联通";
+                // Toast.makeText(this, "此卡属于(中国联通)",
+                // Toast.LENGTH_SHORT).show();
+            } else if (operator.equals("46003")) {
+                // operatorName="中国电信";
+                vendor = "中国电信";
+                // Toast.makeText(this, "此卡属于(中国电信)",
+                // Toast.LENGTH_SHORT).show();
+            }else {
+                vendor = "未知";
+            }
+        }
+        return vendor;
+    }
+
+    private String getYys()
+    {
+        String operator = mTelephonyManager.getSimOperator();
+
+        if(operator!=null){
+
+            if(operator.equals("46000") || operator.equals("46002") || operator.equals("46004") || operator.equals("46007")){
+
+                vendor = "中国移动";
+
+            }else if(operator.equals("46001") || operator.equals("46006") || operator.equals("46009")){
+
+                vendor = "中国联通";
+
+            }else if(operator.equals("46003") || operator.equals("46005") || operator.equals("46011")){
+
+                vendor = "中国电信";
+            }else {
+                vendor = "未知";
+            }
+
+        }
+        return vendor;
+
+    }
+
+
     private class PhoneStatListener extends PhoneStateListener {
         //获取信号强度
 
@@ -127,7 +183,12 @@ public class PingService extends Service {
             if(mTelephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_LTE){
                 //4G网络 最佳范围   >-90dBm 越大越好
                 mGsmSignalStrength = Integer.parseInt(params[9]);
-                String yys = getVendor();
+                String yys = getYys();
+                if (yys=="中国电信") {
+                    int asu = signalStrength.getGsmSignalStrength();
+                    mGsmSignalStrength = -113 + 2*asu;
+                    LogUtil.d(TAG,mGsmSignalStrength+"");
+                }
                 LogUtil.d(TAG,"vendor:"+yys+" dbm:"+mGsmSignalStrength+"");
             }else if(mTelephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_HSDPA ||
                     mTelephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_HSPA ||
@@ -135,7 +196,7 @@ public class PingService extends Service {
                     mTelephonyManager.getNetworkType() == TelephonyManager.NETWORK_TYPE_UMTS){
                         //3G网络最佳范围  >-90dBm  越大越好  ps:中国移动3G获取不到  返回的无效dbm值是正数（85dbm）
                         //在这个范围的已经确定是3G，但不同运营商的3G有不同的获取方法，故在此需做判断 判断运营商与网络类型的工具类在最下方
-                        String yys = getVendor();//获取当前运营商
+                        String yys = getYys();//获取当前运营商
                         if (yys=="中国移动") {
                             LogUtil.d(TAG,0+"");//中国移动3G不可获取，故在此返回0
                         }else if (yys=="中国联通") {
@@ -161,7 +222,7 @@ public class PingService extends Service {
     @Override
     public void onCreate() {
         LogUtil.d(TAG,"-------onCreate----------");
-        if (Build.VERSION.SDK_INT >= 26) {
+        /*if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_HIGH);
 
@@ -170,7 +231,7 @@ public class PingService extends Service {
 
             Notification notification = new Notification.Builder(getApplicationContext(), CHANNEL_ID).build();
             startForeground(1, notification);
-        }
+        }*/
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, PingService.class.getName());
@@ -205,7 +266,7 @@ public class PingService extends Service {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
                 Date date = new Date(System.currentTimeMillis());
                 if (mOnDataArrivedListener != null) {
-                    mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken(),mGsmSignalStrength);
+                    mOnDataArrivedListener.onPingResult(pingStats.getAverageTimeTaken(),mGsmSignalStrength,vendor);
                 }
 
 
@@ -234,7 +295,7 @@ public class PingService extends Service {
         Date date = new Date(System.currentTimeMillis());
         PingResult pingResult = Ping.onAddress(ipAddress).setTimeOutMillis(500).doPing();
         if (mOnDataArrivedListener != null) {
-            mOnDataArrivedListener.onPingResult(pingResult.getTimeTaken(),mGsmSignalStrength);
+            mOnDataArrivedListener.onPingResult(pingResult.getTimeTaken(),mGsmSignalStrength,vendor);
         }
         RecordItem item = new RecordItem(null,simpleDateFormat.format(date),pingResult.getTimeTaken(),mGsmSignalStrength,record.getId());
         try{
@@ -253,8 +314,9 @@ public class PingService extends Service {
         @Override
         public void run() {
             try {
-                    doPingSync(ipAddress);
-                    LogUtil.d("after invoke doping");
+                    //doPingSync(ipAddress);
+                doPing(ipAddress);
+                LogUtil.d("after invoke doping");
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -324,5 +386,7 @@ public class PingService extends Service {
             mThreadPool.shutdownNow();
             mCount = 0;
         }
+        mOnDataArrivedListener.onPingStatusChange(runFlag);
+
     }
 }

@@ -75,10 +75,10 @@ public class HomeActivity extends AppActivity {
                 PingService.class);
 
         //startService(intent);
-        if (Build.VERSION.SDK_INT >= 26) {
+        /*if (Build.VERSION.SDK_INT >= 26) {
             LogUtil.d(TAG,"startForegroudService");
             this.startForegroundService(intent);
-        } else {
+        } else */{
             // Pre-O behavior.
             LogUtil.d(TAG,"startService");
             this.startService(intent);
